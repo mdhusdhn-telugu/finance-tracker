@@ -1255,18 +1255,70 @@ export default function App() {
 
       {renderModal()}
 
+     
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        
         *{box-sizing:border-box;margin:0;padding:0;}
-        body{background:${T.bg};}
-        ::-webkit-scrollbar{width:4px;height:4px;}
-        ::-webkit-scrollbar-track{background:transparent;}
-        ::-webkit-scrollbar-thumb{background:${T.elevated};border-radius:2px;}
+        body{background:${T.bg}; overflow-x: hidden; width: 100vw; -webkit-tap-highlight-color: transparent;}
+        
+        /* Hide scrollbars on mobile for a cleaner app feel */
+        ::-webkit-scrollbar{width:0px;height:0px;}
         input[type=number]::-webkit-inner-spin-button{opacity:0.5;}
         select option{background:${T.elevated};}
+
+        /* --- DESKTOP STYLES --- */
         @media(min-width:768px){
-          .mobile-topbar{display:none!important;}
-          .main-content{padding-top:24px!important;}
+          .mobile-topbar { display: none !important; }
+          .main-content { 
+            padding-top: 24px !important; 
+            padding-left: 32px !important; 
+            padding-right: 32px !important; 
+          }
+          ::-webkit-scrollbar { width:6px; height:6px; }
+          ::-webkit-scrollbar-thumb { background:${T.elevated}; border-radius:3px; }
+        }
+
+        /* --- MOBILE RESPONSIVENESS OVERRIDES --- */
+        @media(max-width: 767px) {
+          /* Prevent horizontal scrolling */
+          .main-content {
+            padding: 12px !important;
+            padding-top: 76px !important;
+            overflow-x: hidden;
+            width: 100vw;
+          }
+          
+          /* Force all CSS Grids to stack into 1 column on small phones */
+          div[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+          }
+
+          /* Reduce overall card padding to save screen real estate */
+          div[style*="padding: 20px"], div[style*="padding: 24px"] {
+            padding: 16px !important;
+          }
+
+          /* Scale down massive headers */
+          h1 { font-size: 22px !important; }
+          div[style*="fontSize: 26"], div[style*="fontSize: 28"] { 
+            font-size: 24px !important; 
+          }
+
+          /* Make filter buttons & dropdowns span full width */
+          select, input { font-size: 16px !important; } /* Prevents iOS auto-zoom */
+          div[style*="flex-wrap: wrap"] > select,
+          div[style*="flex-wrap: wrap"] > div {
+            flex: 1 1 100% !important;
+            width: 100% !important;
+          }
+
+          /* Fix Modal widths for mobile screens */
+          div[style*="maxWidth: 460"], div[style*="maxWidth: 620"] {
+            max-width: 92vw !important;
+            max-height: 80vh !important;
+            margin: 0 auto;
+          }
         }
       `}</style>
     </div>
