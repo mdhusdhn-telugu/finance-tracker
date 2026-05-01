@@ -36,7 +36,7 @@ jobs:
                 </p>
                 
                 <!-- Action Button -->
-                <a href="https://madhus-finance-tracker.web.app" style="display: inline-block; background-color: #6366f1; color: #ffffff; font-weight: 600; font-size: 16px; text-decoration: none; padding: 16px 32px; border-radius: 12px;">
+                <a href="https://madhufinancetracker.netlify.app" style="display: inline-block; background-color: #6366f1; color: #ffffff; font-weight: 600; font-size: 16px; text-decoration: none; padding: 16px 32px; border-radius: 12px;">
                   Open Dashboard
                 </a>
                 
