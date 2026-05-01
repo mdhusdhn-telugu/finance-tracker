@@ -73,7 +73,7 @@ const currentYear = today.getFullYear();
 const currentMonthNum = today.getMonth(); // 0-indexed (0 = Jan, 11 = Dec)
 const currentMonthLabel = today.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-// Generate "YYYY-MM" format for the current month (e.g., "2026-05")
+// Generate "YYYY-MM" format for the current month
 const CURRENT_MONTH = `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}`;
 
 // Generate the last 4 months for the chart labels
@@ -250,6 +250,15 @@ function ProgressBar({value,max,color,height=8}) {
 function DashboardView({expenses,income,goals,bills,investments,liabilities,budgets,currency,setView}) {
   const curExp  = useMemo(()=>expenses.filter(e=>e.date.startsWith(CURRENT_MONTH)).reduce((s,e)=>s+e.amount,0),[expenses]);
   const curInc  = useMemo(()=>income.filter(i=>i.date.startsWith(CURRENT_MONTH)).reduce((s,i)=>s+i.amount,0),[income]);
+
+  // --- REAL TREND CALCULATIONS ---
+  const lastMonthPrefix = MONTH_PREFIXES[2]; 
+  const lastInc = useMemo(()=>income.filter(i=>i.date.startsWith(lastMonthPrefix)).reduce((s,i)=>s+i.amount,0),[income, lastMonthPrefix]);
+  const lastExp = useMemo(()=>expenses.filter(e=>e.date.startsWith(lastMonthPrefix)).reduce((s,e)=>s+e.amount,0),[expenses, lastMonthPrefix]);
+
+  const incTrend = lastInc > 0 ? Math.round(((curInc - lastInc) / lastInc) * 100) : (curInc > 0 ? 100 : null);
+  const expTrend = lastExp > 0 ? Math.round(((curExp - lastExp) / lastExp) * 100) : (curExp > 0 ? 100 : null);
+
   const savings = curInc - curExp;
   const savePct = curInc>0 ? Math.round((savings/curInc)*100) : 0;
   const totalInv  = investments.reduce((s,i)=>s+i.amount,0);
@@ -280,8 +289,8 @@ function DashboardView({expenses,income,goals,bills,investments,liabilities,budg
 />
       {/* Stat Cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:16,marginBottom:24}}>
-        <StatCard label="Monthly Income"   value={fmt(curInc,currency,true)}   icon={TrendingUp}   color={T.green}  trend={5}  currency={currency}/>
-        <StatCard label="Monthly Expenses" value={fmt(curExp,currency,true)}    icon={TrendingDown}  color={T.red}    trend={-3} currency={currency}/>
+        <StatCard label="Monthly Income"   value={fmt(curInc,currency,true)}   icon={TrendingUp}   color={T.green}  trend={incTrend}  currency={currency}/>
+        <StatCard label="Monthly Expenses" value={fmt(curExp,currency,true)}    icon={TrendingDown}  color={T.red}    trend={expTrend} currency={currency}/>
         <StatCard label="Net Savings"      value={fmt(savings,currency,true)}   icon={PiggyBank}    color={T.accent} sub={`${savePct}% of income`} currency={currency}/>
         <StatCard label="Net Worth"        value={fmt(netWorth,currency,true)}  icon={Landmark}     color={T.purple} sub="Assets − Liabilities" currency={currency}/>
       </div>
@@ -754,7 +763,7 @@ function InvestmentsView({investments,onDelete,setModal,currency}) {
 
 // ─── NET WORTH VIEW ───────────────────────────────────────────────────────────
 function NetWorthView({investments,liabilities,onDeleteLiab,setModal,currency}) {
-  const totalAssets = investments.reduce((s,i)=>s+i.amount,0) + 50000;
+  const totalAssets = investments.reduce((s,i)=>s+i.amount,0);
   const totalLiab   = liabilities.reduce((s,l)=>s+l.amount,0);
   const netWorth    = totalAssets-totalLiab;
   const debtRatio   = totalAssets>0?((totalLiab/totalAssets)*100).toFixed(1):0;
@@ -1255,7 +1264,6 @@ export default function App() {
 
       {renderModal()}
 
-     
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
         
