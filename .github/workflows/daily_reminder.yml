@@ -21,10 +21,29 @@ jobs:
           to: mdhusdhndegree@gmail.com
           from: "FinTracker Pro"
           html_body: |
-            <div style="font-family: sans-serif; background: #030712; color: #f8fafc; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #1f2937;">
-              <h2 style="color: #6366f1;">Good Evening, Madhu!</h2>
-              <p style="font-size: 16px;">Did you spend any money today? Take 30 seconds to log it so you stay on track!</p>
-              <div style="margin-top: 24px;">
-                <a href="https://your-github-username.github.io/finance-tracker/" style="background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 10px; font-weight: bold;">Open Dashboard</a>
+            <div style="background-color: #050505; padding: 60px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+              <div style="max-width: 480px; margin: 0 auto; background-color: #111520; border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 48px 32px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+                
+                <!-- Icon Header -->
+                <div style="background: linear-gradient(135deg, #6366f1, #a855f7); width: 56px; height: 56px; line-height: 56px; border-radius: 16px; margin: 0 auto 24px; font-size: 28px; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);">
+                  💸
+                </div>
+                
+                <!-- Main Content -->
+                <h2 style="color: #ffffff; margin-top: 0; margin-bottom: 12px; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">Good Evening, Madhu!</h2>
+                <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin-bottom: 36px;">
+                  Did you spend any money today? Take 30 seconds to log your expenses and keep your financial goals perfectly on track.
+                </p>
+                
+                <!-- Action Button -->
+                <a href="https://madhus-finance-tracker.web.app" style="display: inline-block; background-color: #6366f1; color: #ffffff; font-weight: 600; font-size: 16px; text-decoration: none; padding: 16px 32px; border-radius: 12px;">
+                  Open Dashboard
+                </a>
+                
+                <!-- Footer -->
+                <p style="color: #475569; font-size: 13px; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 24px;">
+                  Sent securely from your automated FinTracker Pro backend.
+                </p>
+                
               </div>
             </div>

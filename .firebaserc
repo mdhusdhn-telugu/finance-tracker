@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "financetracker-f65f6"
-  }
+  },
+  "targets": {
+    "financetracker-f65f6": {
+      "hosting": {
+        "app": [
+          "madhus-finance-tracker"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
