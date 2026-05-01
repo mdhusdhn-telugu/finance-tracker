@@ -25,7 +25,7 @@ const T = {
   elevated:  "#1d2440",
   border:    "rgba(255,255,255,0.07)",
   borderMd:  "rgba(255,255,255,0.12)",
-  accent:    "#6366f1", // Sleek modern Indigo instead of yellow
+  accent:    "#6366f1", // Sleek modern Indigo
   accentDim: "rgba(99,102,241,0.15)",
   green:     "#10b981",
   greenDim:  "rgba(16,185,129,0.12)",
@@ -66,13 +66,12 @@ const CURRENCIES = [
   { code:"EUR", symbol:"€" }, { code:"GBP", symbol:"£" },
   { code:"JPY", symbol:"¥" },
 ];
-// const MONTH_PREFIXES = ["2026-01","2026-02","2026-03","2026-04"];
-// const MONTHS         = ["Jan","Feb","Mar","Apr"];
-// const CURRENT_MONTH  = "2026-04";
+
 // ─── DYNAMIC DATE UTILS ───────────────────────────────────────────────────────
 const today = new Date();
 const currentYear = today.getFullYear();
 const currentMonthNum = today.getMonth(); // 0-indexed (0 = Jan, 11 = Dec)
+const currentMonthLabel = today.toLocaleString('default', { month: 'long', year: 'numeric' });
 
 // Generate "YYYY-MM" format for the current month (e.g., "2026-05")
 const CURRENT_MONTH = `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}`;
@@ -80,12 +79,22 @@ const CURRENT_MONTH = `${currentYear}-${String(currentMonthNum + 1).padStart(2, 
 // Generate the last 4 months for the chart labels
 const MONTHS = [];
 const MONTH_PREFIXES = [];
-
 for (let i = 3; i >= 0; i--) {
   const d = new Date(currentYear, currentMonthNum - i, 1);
-  MONTHS.push(d.toLocaleString('default', { month: 'short' })); // e.g., "Feb", "Mar", "Apr", "May"
-  MONTH_PREFIXES.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); // e.g., "2026-02", "2026-03"
+  MONTHS.push(d.toLocaleString('default', { month: 'short' })); 
+  MONTH_PREFIXES.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); 
 }
+
+// Generate the last 4 months for the filter dropdowns (e.g., Expenses & Income views)
+const FILTER_MONTH_OPTIONS = [];
+for (let i = 0; i < 4; i++) {
+  const d = new Date(currentYear, currentMonthNum - i, 1);
+  FILTER_MONTH_OPTIONS.push({
+    prefix: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+    label: `${d.toLocaleString('default', { month: 'long' })} ${d.getFullYear()}`
+  });
+}
+
 // ─── INIT DATA (Budgets Only) ────────────────────────────────────────────────
 const INIT_BUDGETS = {
   "Food & Dining":6000,"Rent":12000,"Transport":2000,"Utilities":1500,
@@ -148,7 +157,7 @@ function Fld({label,type="text",value,onChange,options,min,step,placeholder,note
 function Btn({children,onClick,variant="primary",size="md",full=false,style:ex}) {
   const base={display:"flex",alignItems:"center",justifyContent:"center",gap:6,border:"none",cursor:"pointer",fontFamily:"'Inter', sans-serif",fontWeight:600,borderRadius:10,transition:"opacity 0.15s, transform 0.1s",whiteSpace:"nowrap"};
   const V={
-    primary: {background:T.accent,      color:"#fff",         padding:size==="sm"?"7px 14px":"10px 20px",fontSize:size==="sm"?13:14},
+    primary: {background:T.accent,      color:"#fff",        padding:size==="sm"?"7px 14px":"10px 20px",fontSize:size==="sm"?13:14},
     ghost:   {background:"transparent", color:T.textSub,      padding:size==="sm"?"7px 14px":"10px 20px",fontSize:size==="sm"?13:14,border:`1px solid ${T.border}`},
     danger:  {background:T.redDim,      color:T.red,          padding:size==="sm"?"7px 14px":"10px 20px",fontSize:size==="sm"?13:14},
     success: {background:T.greenDim,    color:T.green,        padding:size==="sm"?"7px 14px":"10px 20px",fontSize:size==="sm"?13:14},
@@ -267,7 +276,7 @@ function DashboardView({expenses,income,goals,bills,investments,liabilities,budg
     <div>
 <PageHeader 
   title="Dashboard" 
-  subtitle={`${today.toLocaleString('default', { month: 'long', year: 'numeric' })} · Your financial overview`}
+  subtitle={`${currentMonthLabel} · Your financial overview`}
 />
       {/* Stat Cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:16,marginBottom:24}}>
@@ -422,9 +431,6 @@ function TransactionsView({type,items,onAdd,onEdit,onDelete,currency,setModal}) 
 
   const total = filtered.reduce((s,e)=>s+e.amount,0);
 
-  const monthOpts = ["All","2026-04","2026-03","2026-02","2026-01"];
-  const monthLabels = {"All":"All Months","2026-04":"April 2026","2026-03":"March 2026","2026-02":"Feb 2026","2026-01":"Jan 2026"};
-
   return (
     <div>
       <PageHeader
@@ -439,9 +445,13 @@ function TransactionsView({type,items,onAdd,onEdit,onDelete,currency,setModal}) 
           <Search size={14} color={T.textSub}/>
           <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{background:"none",border:"none",color:T.text,fontSize:13,outline:"none",width:"100%",fontFamily:"'Inter', sans-serif"}}/>
         </div>
+        
+        {/* DYNAMIC MONTH DROPDOWN */}
         <select value={filterMonth} onChange={e=>setFilterMonth(e.target.value)} style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:10,padding:"8px 12px",color:T.text,fontSize:13,outline:"none",fontFamily:"'Inter', sans-serif"}}>
-          {monthOpts.map(m=><option key={m} value={m}>{monthLabels[m]}</option>)}
+          <option value="All">All Months</option>
+          {FILTER_MONTH_OPTIONS.map(m=><option key={m.prefix} value={m.prefix}>{m.label}</option>)}
         </select>
+
         <select value={filterCat} onChange={e=>setFilterCat(e.target.value)} style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:10,padding:"8px 12px",color:T.text,fontSize:13,outline:"none",fontFamily:"'Inter', sans-serif"}}>
           <option value="All">All Categories</option>
           {cats.map(c=><option key={c.name} value={c.name}>{c.emoji} {c.name}</option>)}
@@ -495,7 +505,7 @@ function BudgetView({expenses,budgets,setBudgets,currency}) {
 
   return (
     <div>
-      <PageHeader title="Budget" subtitle={`April 2026 · ${fmt(totalSpent,currency,true)} of ${fmt(totalBudget,currency,true)} used`}/>
+      <PageHeader title="Budget" subtitle={`${currentMonthLabel} · ${fmt(totalSpent,currency,true)} of ${fmt(totalBudget,currency,true)} used`}/>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:16,marginBottom:28}}>
         <StatCard label="Total Budget"    value={fmt(totalBudget,currency,true)}              icon={Wallet}    color={T.blue}   currency={currency}/>
@@ -853,7 +863,7 @@ Currency: ${currency}. Be specific with amounts and percentages.`}]
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
           <div style={{background:T.accentDim,borderRadius:12,padding:10,display:"flex"}}><Sparkles size={20} color={T.accent}/></div>
           <div>
-            <div style={{fontSize:16,fontWeight:700,color:T.text,fontFamily:"'Plus Jakarta Sans', sans-serif"}}>Your Financial Snapshot — April 2026</div>
+            <div style={{fontSize:16,fontWeight:700,color:T.text,fontFamily:"'Plus Jakarta Sans', sans-serif"}}>Your Financial Snapshot — {currentMonthLabel}</div>
             <div style={{fontSize:13,color:T.textSub}}>Let Claude analyze your spending and suggest improvements</div>
           </div>
         </div>
@@ -1117,7 +1127,6 @@ export default function App() {
   const [modal, setModal] = useState(null);
   const [currency, setCurrency] = useState("INR");
 
-  // We now start with EMPTY arrays instead of the mock data!
   const [expenses, setExpenses] = useState([]);
   const [income, setIncome] = useState([]);
   const [goals, setGoals] = useState([]);
@@ -1139,7 +1148,6 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
 
-    // Helper function to sync a specific collection from Firestore to React state
     const syncData = (collectionName, stateSetter) => {
       const q = query(collection(db, `users/${user.uid}/${collectionName}`));
       return onSnapshot(q, (snapshot) => {
@@ -1148,7 +1156,6 @@ export default function App() {
       });
     };
 
-    // Start listening to all collections
     const unsubExp = syncData("expenses", setExpenses);
     const unsubInc = syncData("income", setIncome);
     const unsubGoals = syncData("goals", setGoals);
@@ -1156,16 +1163,14 @@ export default function App() {
     const unsubInv = syncData("investments", setInv);
     const unsubLiab = syncData("liabilities", setLiab);
 
-    // Cleanup listeners when user logs out
     return () => { unsubExp(); unsubInc(); unsubGoals(); unsubBills(); unsubInv(); unsubLiab(); };
   }, [user]);
 
-  // 3. Database Handlers (Adding, Editing, Deleting data in the cloud)
+  // 3. Database Handlers
   const addData = async (col, data) => await addDoc(collection(db, `users/${user.uid}/${col}`), data);
   const editData = async (col, id, data) => await updateDoc(doc(db, `users/${user.uid}/${col}`, id), data);
   const delData = async (col, id) => await deleteDoc(doc(db, `users/${user.uid}/${col}`, id));
 
-  // Connect UI actions to Firestore handlers
   const addExp    = d  => addData("expenses", d);
   const editExp   = (d,id) => editData("expenses", id, d);
   const delExp    = id => delData("expenses", id);
@@ -1238,9 +1243,9 @@ export default function App() {
           {view==="dashboard"   && <DashboardView   {...viewProps}/>}
           {view==="expenses"    && <TransactionsView type="expense" items={expenses} onAdd={addExp} onEdit={editExp} onDelete={delExp} currency={currency} setModal={setModal}/>}
           {view==="income"      && <TransactionsView type="income"  items={income}   onAdd={addInc} onEdit={editInc} onDelete={delInc} currency={currency} setModal={setModal}/>}
-          {view==="budget"      && <BudgetView       {...viewProps}/>}
-          {view==="goals"       && <GoalsView        goals={goals} onAdd={addGoal} onEdit={editGoal} onDelete={delGoal} setModal={setModal} currency={currency}/>}
-          {view==="bills"       && <BillsView        bills={bills} onAdd={addBill} onDelete={delBill} setModal={setModal} currency={currency}/>}
+          {view==="budget"      && <BudgetView      {...viewProps}/>}
+          {view==="goals"       && <GoalsView       goals={goals} onAdd={addGoal} onEdit={editGoal} onDelete={delGoal} setModal={setModal} currency={currency}/>}
+          {view==="bills"       && <BillsView       bills={bills} onAdd={addBill} onDelete={delBill} setModal={setModal} currency={currency}/>}
           {view==="investments" && <InvestmentsView  investments={investments} onDelete={delInv} setModal={setModal} currency={currency}/>}
           {view==="networth"    && <NetWorthView      investments={investments} liabilities={liabilities} onDeleteLiab={delLiab} setModal={setModal} currency={currency}/>}
           {view==="ai"          && <AIInsightsView   expenses={expenses} income={income} goals={goals} currency={currency}/>}
