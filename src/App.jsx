@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "./firebase";
-import { collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query } from "firebase/firestore";
+// Notice setDoc is added here!
+import { collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, setDoc } from "firebase/firestore";
 import Login from "./Login";
 import {
   LayoutDashboard, TrendingUp, TrendingDown, Target, Receipt,
@@ -251,7 +252,6 @@ function DashboardView({expenses,income,goals,bills,investments,liabilities,budg
   const curExp  = useMemo(()=>expenses.filter(e=>e.date.startsWith(CURRENT_MONTH)).reduce((s,e)=>s+e.amount,0),[expenses]);
   const curInc  = useMemo(()=>income.filter(i=>i.date.startsWith(CURRENT_MONTH)).reduce((s,i)=>s+i.amount,0),[income]);
 
-  // --- REAL TREND CALCULATIONS ---
   const lastMonthPrefix = MONTH_PREFIXES[2]; 
   const lastInc = useMemo(()=>income.filter(i=>i.date.startsWith(lastMonthPrefix)).reduce((s,i)=>s+i.amount,0),[income, lastMonthPrefix]);
   const lastExp = useMemo(()=>expenses.filter(e=>e.date.startsWith(lastMonthPrefix)).reduce((s,e)=>s+e.amount,0),[expenses, lastMonthPrefix]);
@@ -287,7 +287,6 @@ function DashboardView({expenses,income,goals,bills,investments,liabilities,budg
   title="Dashboard" 
   subtitle={`${currentMonthLabel} · Your financial overview`}
 />
-      {/* Stat Cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:16,marginBottom:24}}>
         <StatCard label="Monthly Income"   value={fmt(curInc,currency,true)}   icon={TrendingUp}   color={T.green}  trend={incTrend}  currency={currency}/>
         <StatCard label="Monthly Expenses" value={fmt(curExp,currency,true)}    icon={TrendingDown}  color={T.red}    trend={expTrend} currency={currency}/>
@@ -295,7 +294,6 @@ function DashboardView({expenses,income,goals,bills,investments,liabilities,budg
         <StatCard label="Net Worth"        value={fmt(netWorth,currency,true)}  icon={Landmark}     color={T.purple} sub="Assets − Liabilities" currency={currency}/>
       </div>
 
-      {/* Bill Alerts */}
       {billAlerts.length>0 && (
         <Card style={{marginBottom:24,borderColor:T.accent+"44",background:"linear-gradient(135deg,#0e1024 0%,"+T.card+" 100%)"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
@@ -316,7 +314,6 @@ function DashboardView({expenses,income,goals,bills,investments,liabilities,budg
       )}
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:20,marginBottom:24}}>
-        {/* Income vs Expenses Chart */}
         <Card style={{gridColumn:"span 2"}}>
           <div style={{fontSize:15,fontWeight:700,color:T.text,fontFamily:"'Plus Jakarta Sans', sans-serif",marginBottom:20}}>Income vs Expenses</div>
           <ResponsiveContainer width="100%" height={220}>
@@ -335,7 +332,6 @@ function DashboardView({expenses,income,goals,bills,investments,liabilities,budg
           </ResponsiveContainer>
         </Card>
 
-        {/* Category Breakdown */}
         <Card>
           <div style={{fontSize:15,fontWeight:700,color:T.text,fontFamily:"'Plus Jakarta Sans', sans-serif",marginBottom:16}}>Spending by Category</div>
           {catData.length === 0 ? (
@@ -363,7 +359,6 @@ function DashboardView({expenses,income,goals,bills,investments,liabilities,budg
           )}
         </Card>
 
-        {/* Goals */}
         <Card>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
             <span style={{fontSize:15,fontWeight:700,color:T.text,fontFamily:"'Plus Jakarta Sans', sans-serif"}}>Financial Goals</span>
@@ -394,7 +389,6 @@ function DashboardView({expenses,income,goals,bills,investments,liabilities,budg
         </Card>
       </div>
 
-      {/* Recent Transactions */}
       <Card>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
           <span style={{fontSize:15,fontWeight:700,color:T.text,fontFamily:"'Plus Jakarta Sans', sans-serif"}}>Recent Transactions</span>
@@ -448,14 +442,12 @@ function TransactionsView({type,items,onAdd,onEdit,onDelete,currency,setModal}) 
         action={<Btn onClick={()=>setModal({type:isInc?"addIncome":"addExpense",data:null})}><Plus size={16}/> Add {isInc?"Income":"Expense"}</Btn>}
       />
 
-      {/* Filters */}
       <div style={{display:"flex",gap:10,marginBottom:20,flexWrap:"wrap"}}>
         <div style={{display:"flex",alignItems:"center",gap:8,background:T.card,border:`1px solid ${T.border}`,borderRadius:10,padding:"8px 12px",flex:1,minWidth:180}}>
           <Search size={14} color={T.textSub}/>
           <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{background:"none",border:"none",color:T.text,fontSize:13,outline:"none",width:"100%",fontFamily:"'Inter', sans-serif"}}/>
         </div>
         
-        {/* DYNAMIC MONTH DROPDOWN */}
         <select value={filterMonth} onChange={e=>setFilterMonth(e.target.value)} style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:10,padding:"8px 12px",color:T.text,fontSize:13,outline:"none",fontFamily:"'Inter', sans-serif"}}>
           <option value="All">All Months</option>
           {FILTER_MONTH_OPTIONS.map(m=><option key={m.prefix} value={m.prefix}>{m.label}</option>)}
@@ -467,7 +459,6 @@ function TransactionsView({type,items,onAdd,onEdit,onDelete,currency,setModal}) 
         </select>
       </div>
 
-      {/* List */}
       {filtered.length===0
         ? <EmptyState icon={isInc?TrendingUp:Receipt} message={`No ${isInc?"income":"expenses"} found`} action={<Btn onClick={()=>setModal({type:isInc?"addIncome":"addExpense",data:null})}>Add your first {isInc?"income":"expense"}</Btn>}/>
         : (
@@ -544,7 +535,14 @@ function BudgetView({expenses,budgets,setBudgets,currency}) {
                 ? (
                   <div style={{display:"flex",gap:8,alignItems:"center"}}>
                     <input value={val} onChange={e=>setVal(e.target.value)} type="number" placeholder="Budget amount" style={{flex:1,background:T.surface,border:`1px solid ${T.borderMd}`,borderRadius:8,padding:"8px 10px",color:T.text,fontSize:13,outline:"none",fontFamily:"'Inter', sans-serif"}}/>
-                    <Btn size="sm" onClick={()=>{setBudgets(p=>({...p,[cat.name]:parseFloat(val)||0}));setEditing(null);}}>Save</Btn>
+                    
+                    {/* Notice how we pass the new budget object to setBudgets here! */}
+                    <Btn size="sm" onClick={()=>{
+                      const newBudgets = { ...budgets, [cat.name]: parseFloat(val) || 0 };
+                      setBudgets(newBudgets);
+                      setEditing(null);
+                    }}>Save</Btn>
+                    
                     <Btn size="sm" variant="ghost" onClick={()=>setEditing(null)}>×</Btn>
                   </div>
                 ) : (
@@ -1172,7 +1170,17 @@ export default function App() {
     const unsubInv = syncData("investments", setInv);
     const unsubLiab = syncData("liabilities", setLiab);
 
-    return () => { unsubExp(); unsubInc(); unsubGoals(); unsubBills(); unsubInv(); unsubLiab(); };
+    // NEW: Listen for the Budget settings from Firestore!
+    const unsubBudget = onSnapshot(doc(db, `users/${user.uid}/settings/budget`), (docSnap) => {
+      if (docSnap.exists()) {
+        setBudgets(docSnap.data());
+      }
+    });
+
+    return () => { 
+      unsubExp(); unsubInc(); unsubGoals(); unsubBills(); unsubInv(); unsubLiab(); 
+      unsubBudget(); // Clean up the new listener
+    };
   }, [user]);
 
   // 3. Database Handlers
@@ -1205,6 +1213,12 @@ export default function App() {
   const addLiab   = d  => addData("liabilities", d);
   const delLiab   = id => delData("liabilities", id);
 
+  // NEW: Save the budget configurations to Firestore
+  const handleUpdateBudgets = async (newBudgets) => {
+    setBudgets(newBudgets); // Update UI instantly
+    await setDoc(doc(db, `users/${user.uid}/settings/budget`), newBudgets); // Save to cloud
+  };
+
   const closeModal = () => setModal(null);
 
   const renderModal = () => {
@@ -1224,7 +1238,8 @@ export default function App() {
     }
   };
 
-  const viewProps = {expenses,income,goals,bills,investments,liabilities,budgets,setBudgets,currency,setModal,setView};
+  // We pass the new handleUpdateBudgets down to the views
+  const viewProps = {expenses,income,goals,bills,investments,liabilities,budgets,setBudgets: handleUpdateBudgets,currency,setModal,setView};
 
   if (authLoading) {
     return <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: T.bg, color: T.text, fontFamily: "'Inter', sans-serif" }}>Loading...</div>;
