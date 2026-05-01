@@ -1,0 +1,30 @@
+name: Daily Expense Reminder
+on:
+  schedule:
+    # This runs at 15:30 UTC every day, which is 9:00 PM IST
+    - cron: '30 15 * * *'
+  workflow_dispatch: # This allows you to run it manually to test it!
+
+jobs:
+  send_email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Mail
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: mdhusdhndegree@gmail.com
+          # This pulls the password from your GitHub Settings Secrets
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "⏱️ Time to log today's expenses!"
+          to: mdhusdhndegree@gmail.com
+          from: "FinTracker Pro"
+          html_body: |
+            <div style="font-family: sans-serif; background: #030712; color: #f8fafc; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #1f2937;">
+              <h2 style="color: #6366f1;">Good Evening, Madhu!</h2>
+              <p style="font-size: 16px;">Did you spend any money today? Take 30 seconds to log it so you stay on track!</p>
+              <div style="margin-top: 24px;">
+                <a href="https://your-github-username.github.io/finance-tracker/" style="background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 10px; font-weight: bold;">Open Dashboard</a>
+              </div>
+            </div>
